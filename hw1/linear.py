@@ -9,26 +9,33 @@ import numpy as np
 import math
 
 train_data_name = sys.argv[1]
+test_data_name = sys.argv[2]
 l_pm25 = []
+t_l_pm25 = []
 
 apped_dict = {
-    "PM2.5": lambda x: l_pm25.extend(x[3:28])
+    "PM2.5": lambda x: l_pm25.extend(x[3:])
+}
+t_apped_dict = {
+    "PM2.5": lambda x: t_l_pm25.extend(x[2:])
 }
 
 
 a, b = symbols('a b')
 #a, b = 1, 1
 #f1 = lambda x: a * x + b
-eta_a = 0.00001
-eta_b = 0.00001
+eta = 0.00001
+st_a, st_b = 3,10
 threshold = 1
+res=dict()
 
 def f1(X):
     return a * X + b
 
 def linear_regression(X, Y):
+    global st_a, st_b, res
+    global eta, eta
     a, b = symbols('a b')
-    st_a, st_b = 3,10
     error = 0.0
 
     for i in range(100):
@@ -39,7 +46,7 @@ def linear_regression(X, Y):
 
         e_a = diff (error, a)
         e_b = diff (error, b)
-        print "e_a=", e_a, "e_b=", e_b, "eta_a=", eta_a, "eta_b=", eta_b
+        print "e_a=", e_a, "e_b=", e_b, "eta=", eta
         if i % 100 == 0:
             print "Processing data[", i, "]"
 
@@ -52,6 +59,9 @@ def linear_regression(X, Y):
     # 求聯立方程式的解
     res = solve([e_a, e_b], [a, b])
     print "ANS ======", res[a], res[b]
+    print type(res)
+    print type(res[a])
+    print float(res[a])
 
     while 1:
         counter += 1
@@ -63,33 +73,31 @@ def linear_regression(X, Y):
 
 
         if counter % 1000 == 0:
-            print "NewEtaTest a_rate=", a_rate, "b_rate=", b_rate, "last_a=", last_a, "last_b=", last_b, "eta_a=", eta_a, "eta_b=", eta_b , "st_a=", st_a, "st_b", st_b
+            print "NewEtaTest a_rate=", a_rate, "b_rate=", b_rate, "last_a=", last_a, "last_b=", last_b, "eta=", eta, "st_a=", st_a, "st_b", st_b
 
         if abs(a_rate) >= abs(last_a) and abs(b_rate) >= abs(last_b):
-            global eta_a, eta_b
-            eta_a = eta_a / 10
-            eta_b = eta_b / 10
+            eta = eta / 10
             a_rate = last_a
             st_a = last_st_a
             b_rate = last_b
             st_b = last_st_b
         #else:
         #    if abs(a_rate) >= abs(last_a):
-        #        global eta_a
-        #        eta_a = eta_a / 10
+        #        global eta
+        #        eta = eta / 10
         #        a_rate = last_a
         #        st_a = last_st_a
 
         #    if abs(b_rate) >= abs(last_b):
-        #        global eta_b
-        #        eta_b = eta_b / 10
+        #        global eta
+        #        eta = eta / 10
         #        b_rate = last_b
         #        st_b = last_st_b
 
         last_st_a = st_a
         last_st_b = st_b
 
-        if eta_a == 0 and eta_b == 0:
+        if eta == 0:
             break
 
         if counter % 1000 == 0:
@@ -98,9 +106,9 @@ def linear_regression(X, Y):
             break
         else:
             if abs(a_rate) >= threshold:
-                st_a = st_a - eta_a * a_rate
+                st_a = st_a - eta * a_rate
             if abs(b_rate) >= threshold:
-                st_b = st_b - eta_b * b_rate
+                st_b = st_b - eta * b_rate
         last_a = a_rate
         last_b = b_rate
 
@@ -132,8 +140,42 @@ with open(train_data_name, 'r') as f:
                 #print l_pm25
             except:
                 continue
-print l_pm25
+
+#print l_pm25
 l_pm25 = map(int, l_pm25)
 linear_regression(l_pm25, l_pm25)
+
+with open(test_data_name, 'r') as f:
+        for line in f:
+            word = line.replace('\r\n', '').split(',')
+            word = line.replace('\n', '').split(',')
+            try:
+                t_apped_dict[word[1]](word)
+                #print word[2]
+                #print word
+                #print line
+                #print t_l_pm25
+            except:
+                continue
+        print '------------ideal equation---------------'
+        t_l_pm25 = map(int, t_l_pm25)
+        count = 0
+        for i in range(1, 241):
+            #print "target=", t_l_pm25[9*i-1]
+            #print "id_", i - 1, t_l_pm25[9*i-1], int(t_l_pm25[9*i-1])*0.9518914347381807 + 2.248849145972113
+            #print "id_", i - 1, ",", int(t_l_pm25[9*i-1])*0.9518914347381807 + 2.248849145972113
+            tmp = "id_" + str(i-1) + "," + str(float(t_l_pm25[9*i-1]*res[a] + res[b]))
+            print tmp
+        print '-----------------------------------------'
+        print '---------gradient decent equation--------'
+        count = 0
+        for i in range(1, 241):
+            #print "id_", i - 1, t_l_pm25[9*i-1], int(t_l_pm25[9*i-1])*0.9518914347381807 + 2.248849145972113
+            #print "id_", i - 1, ",", int(t_l_pm25[9*i-1])*st_a + st_b
+            tmp = "id_" + str(i) + "," + str(t_l_pm25[9*i-1]*st_a + st_b)
+            print tmp
+        print '-----------------------------------------'
+
+#print t_l_pm25
 
 # if line.contains('PM2.5'):
