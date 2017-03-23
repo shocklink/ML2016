@@ -22,6 +22,8 @@ t_apped_dict = {
 
 
 a0, a1, a2, b = symbols('a0 a1 a2 b')
+a3, a4, a5 = symbols('a3 a4 a5')
+a6, a7, a8 = symbols('a6 a7 a8')
 #a, b = 1, 1
 #f1 = lambda x: a * x + b
 eta = 0.00001
@@ -29,8 +31,8 @@ st_a, st_b = 3,10
 threshold = 1
 res=dict()
 
-def f1(X0, X1, X2):
-    return a0 * X0 + a1 * X1 + a2 * X2 + b
+def f1(X, i):
+    return a0 * X[i] + a1 * X[i+1] + a2 * X[i+2] + a3 * X[i+3] + a4 * X[i+4] + a5 * X[i+5] + a6 * X[i+6] + a7 * X[i+7] + a8 * X[i+8] + b
 
 def linear_regression(X, Y):
     global st_a, st_b, res
@@ -39,14 +41,20 @@ def linear_regression(X, Y):
     error = 0.0
 
     for i in range(100):
-        #print X[i], Y[i+1] , f1
-        error += (Y[i+3] - f1(X[i], X[i+1], X[i+2])) ** 2
+        #print i, X[i], Y[i+1], Y[i+9], X[10] , f1
+        error += (Y[i+9] - f1(X, i)) ** 2
         #print error
         plt.plot(X[i], Y[i+3], 'ro')
 
         e_a0 = diff (error, a0)
         e_a1 = diff (error, a1)
         e_a2 = diff (error, a2)
+        e_a3 = diff (error, a3)
+        e_a4 = diff (error, a4)
+        e_a5 = diff (error, a5)
+        e_a6 = diff (error, a6)
+        e_a7 = diff (error, a7)
+        e_a8 = diff (error, a8)
         e_b = diff (error, b)
         #print "e_a=", e_a, "e_b=", e_b, "eta=", eta
         if i % 100 == 0:
@@ -59,11 +67,14 @@ def linear_regression(X, Y):
 
     # http://terrence.logdown.com/posts/314392-simple-linear-regressionnumpy
     # 求聯立方程式的解
-    res = solve([e_a0, e_a1, e_a2, e_b], [a0, a1, a2, b])
-    print "ANS ======", res[a0], res[a1], res[a2], res[b]
+    res = solve([e_a0, e_a1, e_a2, e_a3, e_a4, e_a5, e_a6, e_a7, e_a8, e_b], [a0, a1, a2, a3, a4, a5,a6, a7, a8, b])
+    print e_a0
+    print e_a1
+    print res
+    #print "ANS ======", res[a0], res[a1], res[a2], res[a3], res[a4], res[b]
     print type(res)
     print type(res[a0])
-    print float(res[a0])
+    #print float(res[a0])
 
 #    while 1:
 #        counter += 1
@@ -128,7 +139,7 @@ def linear_regression(X, Y):
     plt.plot(LR_X, LR_Y, 'g') # render green line
 
     #plt.plot(data_X, data_Y, 'ro')
-    plt.show()
+    #plt.show()
 
 
 with open(train_data_name, 'r') as f:
@@ -162,11 +173,15 @@ with open(test_data_name, 'r') as f:
         print '------------ideal equation---------------'
         t_l_pm25 = map(int, t_l_pm25)
         count = 0
-        for i in range(1, 241):
+        #for i in range(1, 241):
             #print "target=", t_l_pm25[9*i-1]
             #print "id_", i - 1, t_l_pm25[9*i-1], int(t_l_pm25[9*i-1])*0.9518914347381807 + 2.248849145972113
             #print "id_", i - 1, ",", int(t_l_pm25[9*i-1])*0.9518914347381807 + 2.248849145972113
-            tmp = "id_" + str(i-1) + "," + str(float(t_l_pm25[9*i-3]*res[a0]+ t_l_pm25[9*i-2]*res[a1]+ t_l_pm25[9*i-1]*res[a2] + res[b]))
+            #tmp = "id_" + str(i-1) + "," + str(float(t_l_pm25[9*i-3]*res[a0]+ t_l_pm25[9*i-2]*res[a1]+ t_l_pm25[9*i-1]*res[a2] + res[b]))
+        print "id,value"
+        for i in range(0, 240):
+            #print "now" , t_l_pm25[i*9]
+            tmp = "id_" + str(i) + "," + str(float(f1(t_l_pm25, i*9).subs({a0:res[a0], a1:res[a1], a2:res[a2], a3:res[a3], a4:res[a4], a5:res[a5], a6:res[a6], a7:res[a7], a8:res[a8], b:res[b]})))
             print tmp
         print '-----------------------------------------'
 #        print '---------gradient decent equation--------'

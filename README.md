@@ -12,5 +12,7 @@ Python:
 
 HW1: 
 	./linear.py data/train.csv
+	./linear.py data/train.csv data/test_X.csv
     http://speech.ee.ntu.edu.tw/~tlkagk/courses/ML_2016/Lecture/hw1.pdf
     reference: http://terrence.logdown.com/posts/314392-simple-linear-regressionnumpy
+	https://inclass.kaggle.com/c/ml2016-pm2-5-prediction/rules
